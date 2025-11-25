@@ -1,6 +1,10 @@
 streamlit
 pandas
 langchain
-chromadb
-openai
+langchain-community
+sentence-transformers
+faiss-cpu
 python-dotenv
+openai
+
+
