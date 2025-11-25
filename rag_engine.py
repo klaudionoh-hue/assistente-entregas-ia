@@ -20,3 +20,4 @@ def ask_question(db, pergunta):
     )
 
     return resposta.choices[0].message["content"]
+
