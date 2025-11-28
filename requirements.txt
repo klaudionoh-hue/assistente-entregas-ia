@@ -3,7 +3,7 @@ pandas
 python-dotenv
 openai
 
-# LangChain (versão estável)
+# LangChain (versão compatível para Streamlit Cloud)
 langchain==0.1.20
 langchain-community==0.0.38
 
@@ -12,4 +12,3 @@ faiss-cpu
 
 # Embeddings
 sentence-transformers
-i

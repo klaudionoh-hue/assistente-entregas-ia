@@ -1,23 +1,37 @@
-import pandas as pd
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import SentenceTransformerEmbeddings
+# app.py
+import streamlit as st
+from load_csv import load_data
+from rag_engine import ask_question
 
-def load_data(caminho_csv):
-    # Carrega o CSV
-    df = pd.read_csv(caminho_csv, sep=";", encoding="latin1")
+st.set_page_config(page_title="Assistente Inteligente de Entregas", layout="wide")
+st.title("📦 Assistente Inteligente de Entregas")
+st.write("Envie a planilha Rel_Acomp_Entrega.csv e faça perguntas sobre os dados.")
 
-    # Concatena todas as linhas em texto legível
-    linhas_texto = df.astype(str).apply(lambda row: " | ".join(row.values), axis=1).tolist()
+uploaded_file = st.file_uploader("Envie a planilha (CSV)", type=["csv"])
+if uploaded_file:
+    # salva temporariamente
+    with open("Rel_Acomp_Entrega.csv", "wb") as f:
+        f.write(uploaded_file.getbuffer())
 
-    # Divide o texto em pedaços
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-    docs = splitter.create_documents(linhas_texto)
+    st.success("Planilha salva. Processando... (pode levar alguns segundos)")
+    try:
+        db, df = load_data("Rel_Acomp_Entrega.csv")
+        st.success("Base processada! Você pode fazer perguntas agora.")
+    except Exception as e:
+        st.error(f"Erro ao processar a planilha: {e}")
+        st.stop()
 
-    # Cria embeddings
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-
-    # Cria base vetorial FAISS
-    db = FAISS.from_documents(docs, embeddings)
-
-    return db, df
+    pergunta = st.text_input("Digite sua pergunta sobre a base")
+    if st.button("Perguntar"):
+        if pergunta.strip() == "":
+            st.warning("Digite uma pergunta.")
+        else:
+            with st.spinner("Consultando IA..."):
+                try:
+                    resposta = ask_question(db, pergunta)
+                    st.write("### Resposta")
+                    st.write(resposta)
+                except Exception as e:
+                    st.error(f"Erro ao consultar a IA: {e}")
+else:
+    st.info("Faça upload da planilha para começar.")
